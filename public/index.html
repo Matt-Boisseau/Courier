@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
     <title>Courier</title>
 
     <!-- update the version number as needed -->
@@ -10,36 +12,58 @@
     <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/6.2.4/firebase-auth.js"></script>
     <script defer src="/__/firebase/6.2.4/firebase-database.js"></script>
-    <script defer src="/__/firebase/6.2.4/firebase-messaging.js"></script>
-    <script defer src="/__/firebase/6.2.4/firebase-storage.js"></script>
+    <!--<script defer src="/__/firebase/6.2.4/firebase-messaging.js"></script>-->
+    <!--<script defer src="/__/firebase/6.2.4/firebase-storage.js"></script>-->
     <!-- initialize the SDK after all desired features are loaded -->
-    <script defer src="/__/firebase/init.js"></script>
+	<script defer src="/__/firebase/init.js"></script>
   </head>
   <body>
-    <h1>Courier Web App</h1>>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
+	<h1>Courier Web App</h1>
+	<div id="logInOut"></div>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+document.addEventListener('DOMContentLoaded', function() {
 
-        try {
-          let app = firebase.app();
-          let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
-          document.getElementById('load').innerHTML = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          document.getElementById('load').innerHTML = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
+	// Initialize Firebase
+	try {
+		let app = firebase.app();
+		let features = ["auth", "database", "messaging", "storage"].filter(feature => typeof app[feature] === "function");
+		console.log(`Firebase SDK loaded with ${features.join(', ')}`);
+	} catch (e) {
+		console.error(e);
+		console.log("Error loading the Firebase SDK, check the console.");
+	}
+
+	// User auth
+	var provider = new firebase.auth.GoogleAuthProvider();
+	firebase.auth().onAuthStateChanged(function(user) {
+
+		// Logged in
+		if(user) {
+			document.getElementById("logInOut").innerHTML = `<span>Hi, ${user.displayName}.</span><button id='logOutButton'>log out</button>`;
+			document.getElementById("logOutButton").addEventListener("click", function() {
+				firebase.auth().signOut().then(function() {
+					//TODO: unload landing page
+					//TODO: load user dashboard
+				}).catch(function(error) {
+					alert(error.message);
+				});
+			});
+		}
+		
+		// Not logged in
+		else {
+			document.getElementById("logInOut").innerHTML = "<span>You're not logged in.</span><button id='logInButton'>log in</button>";
+			document.getElementById("logInButton").addEventListener("click", function() {
+				firebase.auth().signInWithPopup(provider).then(function(result) {
+					//TODO: unload user dashboard
+					//TODO: load landing page
+				}).catch(function(error) {
+					alert(error.message);
+				});
+			});
+		}
+	});
+});
+	</script>
   </body>
 </html>
