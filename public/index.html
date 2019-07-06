@@ -20,6 +20,7 @@
   <body>
 	<h1>Courier Web App</h1>
 	<div id="logInOut"></div>
+	<div id="arbitraryNumber"></div>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -39,27 +40,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Logged in
 		if(user) {
+
+			// Welcome message and log-out button
 			document.getElementById("logInOut").innerHTML = `<span>Hi, ${user.displayName}.</span><button id='logOutButton'>log out</button>`;
 			document.getElementById("logOutButton").addEventListener("click", function() {
-				firebase.auth().signOut().then(function() {
-					//TODO: unload landing page
-					//TODO: load user dashboard
-				}).catch(function(error) {
-					alert(error.message);
+				firebase
+					.auth()
+					.signOut()
+					.catch(function(error) {
+						alert(error.message);
+					});
+			});
+
+			// Arbitrary number (database test)
+			var db = firebase.database();
+			document.getElementById("arbitraryNumber").innerHTML = "<button id='arbitraryNumberButton'>+</button><span id='cumulativeCount'></span><span id='userNumberCount'></span>";
+			document.getElementById("arbitraryNumberButton").addEventListener("click", function() {
+
+				// Increment cumulative number
+				db.ref(`arbitraryNumber/cumulative`).once("value").then(function(snapshot) {
+					var cumulative = snapshot.val() + 1;
+					document.getElementById("cumulativeCount").innerHTML = `This button has been clicked on ${cumulative} times by all users. `;
+					db.ref(`arbitraryNumber`).update({
+						cumulative: cumulative
+					});
 				});
+
+				// Increment user number
+				db.ref(`arbitraryNumber/byUser/${user.uid}/userNumber`).once("value").then(function(snapshot) {
+					var userNumber = snapshot.val() + 1;
+					document.getElementById("userNumberCount").innerHTML = `You have personally clicked on it ${userNumber} times.`;
+					db.ref(`arbitraryNumber/byUser/${user.uid}`).set({
+						userNumber: userNumber
+					});
+				});
+
+				// Update text
+				console.log(cumulative);
+				console.log(`${cumulative}`);
+				document.getElementById("arbitraryNumberCount").innerHTML = `This button has been clicked on ${cumulative} times by all users. You have personally clicked on it ${userNumber} times.`;
 			});
 		}
 		
 		// Not logged in
 		else {
+
+			// Not-logged-in message and log-in button
 			document.getElementById("logInOut").innerHTML = "<span>You're not logged in.</span><button id='logInButton'>log in</button>";
 			document.getElementById("logInButton").addEventListener("click", function() {
-				firebase.auth().signInWithPopup(provider).then(function(result) {
-					//TODO: unload user dashboard
-					//TODO: load landing page
-				}).catch(function(error) {
-					alert(error.message);
-				});
+				firebase
+					.auth()
+					.signInWithPopup(provider)
+					.catch(function(error) {
+						alert(error.message)
+					});
 			});
 		}
 	});
